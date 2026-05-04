@@ -1,0 +1,127 @@
+/* Container that provides 3D perspective */
+.dice-scene {
+  width: 100px;
+  height: 100px;
+  perspective: 800px; 
+  margin: 40px auto;
+}
+
+/* The actual dice object */
+.dice {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 3s cubic-bezier(0.1, 0.9, 0.2, 1); 
+}
+
+.face {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+
+  /* YOUR CUSTOM GRADIENT! */
+  background: linear-gradient(to right, #FAD8AF, #FF6289, #FAD8AF);
+
+  /* Soft curved edges and shiny border */
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 24px; 
+
+  /* The magic jelly/glass bevel shadows */
+  box-shadow: 
+    inset 0 0 20px rgba(255, 255, 255, 0.6),
+    inset 6px 6px 12px rgba(255, 255, 255, 0.7),
+    inset -6px -6px 12px rgba(0, 0, 0, 0.15),
+    0 8px 20px rgba(244, 151, 169, 0.5); 
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 16px;
+  box-sizing: border-box;
+  gap: 4px;
+  overflow: hidden; /* Keeps the watermark inside */
+}
+
+/* Butterfly Watermark Theme inside the dice */
+.face::before {
+  content: "🦋";
+  position: absolute;
+  font-size: 3.5rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.25; /* Subtle and dreamy */
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+/* The individual dots on the dice */
+.pip {
+  background: #ffffff;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 2; /* Keeps dots above the watermark */
+  box-shadow: 
+    inset 0 -3px 4px rgba(255, 98, 137, 0.3), /* Tinted inner shadow */
+    inset 0 2px 4px rgba(255, 255, 255, 1),
+    0 3px 5px rgba(0,0,0,0.25);
+}
+
+/* Map the dots perfectly to a standard dice layout using CSS Grid */
+/* Side 1 */
+.front .pip:nth-child(1) { grid-column: 2; grid-row: 2; transform: scale(1.3); } /* Make the 1 dot slightly bigger! */
+
+/* Side 2 */
+.back .pip:nth-child(1) { grid-column: 3; grid-row: 1; }
+.back .pip:nth-child(2) { grid-column: 1; grid-row: 3; }
+
+/* Side 3 */
+.right .pip:nth-child(1) { grid-column: 3; grid-row: 1; }
+.right .pip:nth-child(2) { grid-column: 2; grid-row: 2; }
+.right .pip:nth-child(3) { grid-column: 1; grid-row: 3; }
+
+/* Side 4 */
+.left .pip:nth-child(1) { grid-column: 1; grid-row: 1; }
+.left .pip:nth-child(2) { grid-column: 3; grid-row: 1; }
+.left .pip:nth-child(3) { grid-column: 1; grid-row: 3; }
+.left .pip:nth-child(4) { grid-column: 3; grid-row: 3; }
+
+/* Side 5 */
+.top .pip:nth-child(1) { grid-column: 1; grid-row: 1; }
+.top .pip:nth-child(2) { grid-column: 3; grid-row: 1; }
+.top .pip:nth-child(3) { grid-column: 2; grid-row: 2; }
+.top .pip:nth-child(4) { grid-column: 1; grid-row: 3; }
+.top .pip:nth-child(5) { grid-column: 3; grid-row: 3; }
+
+/* Side 6 */
+.bottom .pip:nth-child(1) { grid-column: 1; grid-row: 1; }
+.bottom .pip:nth-child(2) { grid-column: 1; grid-row: 2; }
+.bottom .pip:nth-child(3) { grid-column: 1; grid-row: 3; }
+.bottom .pip:nth-child(4) { grid-column: 3; grid-row: 1; }
+.bottom .pip:nth-child(5) { grid-column: 3; grid-row: 2; }
+.bottom .pip:nth-child(6) { grid-column: 3; grid-row: 3; }
+
+/* Positioning each face in 3D space */
+.front  { transform: rotateY(  0deg) translateZ(50px); }
+.back   { transform: rotateY(180deg) translateZ(50px); }
+.right  { transform: rotateY( 90deg) translateZ(50px); }
+.left   { transform: rotateY(-90deg) translateZ(50px); }
+.top    { transform: rotateX( 90deg) translateZ(50px); }
+.bottom { transform: rotateX(-90deg) translateZ(50px); }
+
+/* Fade in the result text */
+.result-box {
+  text-align: center;
+  transition: opacity 0.5s ease;
+}
+
+.result-box.hidden {
+  opacity: 0;
+}
+
+.result-box.fade-in {
+  opacity: 1;
+}

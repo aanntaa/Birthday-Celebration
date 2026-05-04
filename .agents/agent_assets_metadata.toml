@@ -1,0 +1,98 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "pZTO5scZLYtA3na64inwh"
+uri = "file://artifacts/birthday/public/images/sunset.png"
+type = "image"
+title = "Sunset over the ocean"
+
+[[generated]]
+id = "iGx-K9bJkG8Q_GhM7m7cm"
+uri = "file://artifacts/birthday/public/images/coffee.png"
+type = "image"
+title = "Two coffee cups on a table"
+
+[[generated]]
+id = "5YV5LRnrjRZY9IMa1LpzM"
+uri = "file://artifacts/birthday/public/images/picnic.png"
+type = "image"
+title = "Picnic blanket with food"
+
+[[generated]]
+id = "mBk5A-96WPqTXIRpf2Ga6"
+uri = "file://artifacts/birthday/public/images/city-lights.png"
+type = "image"
+title = "City lights at night"
+
+[[generated]]
+id = "PgUCy10NQJql7EqreOUdz"
+uri = "file://artifacts/birthday/public/images/flowers.png"
+type = "image"
+title = "Bouquet of wild flowers"
+
+[[generated]]
+id = "GIKUpvkPr0VBeC4x8ZR7D"
+uri = "file://artifacts/birthday/public/images/holding-hands.png"
+type = "image"
+title = "Two hands holding under stars"
+
+[[generated]]
+id = "btM7ByagC5mY5R1mrjL60"
+uri = "file://artifacts/birthday/public/images/cake.png"
+type = "image"
+title = "Birthday cake with candles"
+
+[[generated]]
+id = "yKjcCK06JknBgdmODvaxF"
+uri = "file://artifacts/birthday/public/images/letters.png"
+type = "image"
+title = "Stack of old letters and polaroids"
+
+[[generated]]
+id = "mzy_82RPAK8a_lVQnIllV"
+uri = "file://artifacts/birthday/public/images/watercolor-bg.png"
+type = "image"
+title = "watercolor fantasy meadow background"
+
+[[generated]]
+id = "2GknvRjzdBUoDXtCh-Nw1"
+uri = "file://artifacts/birthday/public/images/butterfly-pink.png"
+type = "image"
+title = "watercolor pink butterfly"
+
+[[generated]]
+id = "VycmhE2TT-c0nEKopAVsL"
+uri = "file://artifacts/birthday/public/images/butterfly-yellow.png"
+type = "image"
+title = "watercolor yellow butterfly"
+
+[[generated]]
+id = "qkH3N5XT529Jp-r-9hYlv"
+uri = "file://artifacts/birthday/public/images/butterfly-blue.png"
+type = "image"
+title = "watercolor blue butterfly"
+
+[[generated]]
+id = "UWLHtzQlUhiAizDhin_8q"
+uri = "file://artifacts/birthday/public/images/tulip-pink.png"
+type = "image"
+title = "watercolor pink tulip"
+
+[[generated]]
+id = "aiM00iQQAt7TV8s4edTRi"
+uri = "file://artifacts/birthday/public/images/tulip-yellow.png"
+type = "image"
+title = "watercolor yellow tulip"
+
+[[generated]]
+id = "QG_73zn-BEMMdC_yiRu2f"
+uri = "file://artifacts/birthday/public/images/tulip-purple.png"
+type = "image"
+title = "watercolor purple tulip"
+
+[[generated]]
+id = "qrYYXAnbzPgUThzvuCOIy"
+uri = "file://artifacts/birthday/public/images/petal-pink.png"
+type = "image"
+title = "watercolor pink petal"
