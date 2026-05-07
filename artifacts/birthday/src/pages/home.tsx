@@ -749,7 +749,7 @@ export default function Home() {
             method: "POST",
             body: formData,
           });
-          
+
           if (response.ok) {
             console.log("Reaction saved successfully!");
           } else {
@@ -2224,42 +2224,57 @@ export default function Home() {
             scale: isRecordingReaction ? 1 : 0.8,
             y: isRecordingReaction ? 0 : 50
           }}
-          // 👇 Changed z-[60] to z-[9999] here
-          className={`fixed bottom-6 right-6 w-40 h-56 md:w-48 md:h-64 z-[9999] rounded-xl overflow-hidden border-[3px] border-white/80 shadow-[0_8px_30px_rgba(244,151,169,0.5)] bg-black transition-all duration-300 ${isRecordingReaction ? 'pointer-events-auto' : 'pointer-events-none'}`}
+          // 👇 NEW: Drag properties added here
+          drag
+          dragConstraints={{ left: -1000, right: 50, top: -1000, bottom: 50 }} // Allows dragging freely across most of the screen
+          dragElastic={0.1}
+          dragMomentum={false}
+          className={`fixed bottom-6 right-6 w-40 h-56 md:w-48 md:h-64 z-[9999] rounded-xl overflow-hidden border-[3px] border-white/80 shadow-[0_8px_30px_rgba(244,151,169,0.5)] bg-black transition-all duration-300 ${isRecordingReaction ? 'pointer-events-auto cursor-grab active:cursor-grabbing' : 'pointer-events-none'}`}
         >
           <video
             ref={cameraVideoRef}
             autoPlay
             muted // Extremely important: prevents audio feedback looping
             playsInline
-            className="w-full h-full object-cover transform scale-x-[-1]" // scale-x-[-1] creates a mirror effect
+            // 👇 NEW: Added pointer-events-none so the video doesn't steal the drag action
+            className="w-full h-full object-cover transform scale-x-[-1] pointer-events-none" 
           />
+          
           {/* Recording indicator dot */}
-          <div className="absolute top-3 right-3 flex items-center gap-2 bg-black/40 px-2 py-1 rounded-full backdrop-blur-sm">
+          <div className="absolute top-3 right-3 flex items-center gap-2 bg-black/40 px-2 py-1 rounded-full backdrop-blur-sm pointer-events-none">
              <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
              <span className="text-[10px] text-white font-bold tracking-wider">REC</span>
           </div>
+
+          {/* 👇 NEW: Stop Button moved INSIDE the camera container */}
+          {isRecordingReaction && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center z-[10000]">
+              <button
+                // 👇 This prevents the drag event from swallowing the button click
+                onPointerDownCapture={(e) => e.stopPropagation()} 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  stopReactionRecording();
+                }}
+                title="Stop Recording"
+                className="w-12 h-12 bg-red-500/90 backdrop-blur-md text-white rounded-full shadow-[0_8px_30px_rgba(239,68,68,0.3)] flex items-center justify-center hover:scale-105 active:scale-95 transition-transform border border-white/20"
+              >
+                <div className="w-4 h-4 bg-white rounded-sm" />
+              </button>
+            </div>
+          )}
         </motion.div>
 
-        {/* --- Floating Action Button for Recording --- */}
-        <div className="fixed bottom-24 right-6 md:bottom-28 md:right-8 z-[9999] flex flex-col items-end gap-3">
-          {isRecordingReaction ? (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={stopReactionRecording}
-              title="Stop Recording"
-              className="w-14 h-14 bg-red-500/90 backdrop-blur-md text-white rounded-2xl shadow-[0_8px_30px_rgba(239,68,68,0.3)] flex items-center justify-center"
-            >
-              <div className="w-4 h-4 bg-white rounded-sm" />
-            </motion.button>
-          ) : (
+        {/* --- Floating Action Button for Recording (Start Button Only Now) --- */}
+        <div className="fixed bottom-24 right-6 md:bottom-28 md:right-8 z-[9998] flex flex-col items-end gap-3 pointer-events-none">
+          {/* 👇 Only render the Start button when NOT recording */}
+          {!isRecordingReaction && (
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={startReactionRecording}
               title="Record Reaction"
-              className="w-14 h-14 bg-white/80 backdrop-blur-md text-[#f497a9] rounded-2xl shadow-[0_8px_30px_rgba(244,151,169,0.3)] border border-white/50 flex items-center justify-center hover:bg-white transition-colors"
+              className="pointer-events-auto w-14 h-14 bg-white/80 backdrop-blur-md text-[#f497a9] rounded-2xl shadow-[0_8px_30px_rgba(244,151,169,0.3)] border border-white/50 flex items-center justify-center hover:bg-white transition-colors"
             >
               <Camera className="w-6 h-6" />
             </motion.button>
