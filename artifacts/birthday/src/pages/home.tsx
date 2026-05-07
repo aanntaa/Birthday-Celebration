@@ -614,6 +614,20 @@ export default function Home() {
     }
   }, [videoStage]);
 
+  // Add this effect to watch for accidental tab closures during recording
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // If the camera is rolling, warn them before closing the tab!
+      if (isRecordingReaction) { 
+        e.preventDefault();
+        e.returnValue = ""; // This triggers the browser's default warning popup
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isRecordingReaction]);
+
   const handleAddCustomDate = () => {
     if (newDateInput.trim()) {
       const newIdeasArray = [...dynamicDateIdeas, newDateInput.trim()];
@@ -736,13 +750,26 @@ export default function Home() {
         // Create the video file from the recorded chunks
         const blob = new Blob(chunks, { type: "video/webm" });
         
-        // Let the user know it's saving (optional: you could add a toast notification here)
-        console.log("Saving reaction to database...");
+        // --- 1. SAVE FOR THE USER (Local Download) ---
+        const downloadUrl = URL.createObjectURL(blob);
+        const downloadLink = document.createElement('a');
+        downloadLink.style.display = 'none';
+        downloadLink.href = downloadUrl;
+        downloadLink.download = `My_Message_For_Ve.webm`; // The name of the file they will download
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        
+        // Clean up the URL to save memory
+        setTimeout(() => {
+          window.URL.revokeObjectURL(downloadUrl);
+          document.body.removeChild(downloadLink);
+        }, 100);
 
+        // --- 2. SAVE FOR THE CREATOR (Database Upload) ---
+        console.log("Saving reaction to database...");
         try {
           const formData = new FormData();
           formData.append("video", blob, "ve-reaction.webm");
-          // You can append other data if needed, like a timestamp or user ID
           formData.append("timestamp", new Date().toISOString());
 
           const response = await fetch("https://birthday-celebration-q4zo.onrender.com/api/save-reaction", {
@@ -751,12 +778,14 @@ export default function Home() {
           });
 
           if (response.ok) {
-            console.log("Reaction saved successfully!");
+            // Replaced console.log with an alert so the user actually sees it!
+            alert("🎉 Yay! Your video was successfully saved to Ve's vault!");
           } else {
-            console.error("Failed to save reaction to server.");
+            alert("⚠️ Oh no, there was an issue sending the video to the vault. But don't worry, a copy was just downloaded to your device!");
           }
         } catch (error) {
           console.error("Upload error:", error);
+          alert("⚠️ Connection error! But don't worry, a copy was just downloaded to your device!");
         }
 
         // Stop all media tracks and update state
