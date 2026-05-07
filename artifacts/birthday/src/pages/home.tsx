@@ -1806,7 +1806,7 @@ export default function Home() {
 
                 <div className="relative z-10 space-y-8 text-[#594a4e] leading-relaxed font-['Quicksand'] font-semibold mt-4">
                   <p className="text-3xl md:text-4xl font-['Playfair_Display'] font-bold italic text-[#594a4e] mb-8">
-                    Hi {NICKNAME},
+                    Hi Love,
                   </p>
                   <div className="text-base md:text-lg space-y-6">
                     <p>Congratulations on your 21st Birthday 𖹭</p>
