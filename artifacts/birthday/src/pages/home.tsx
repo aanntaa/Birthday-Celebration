@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useAudio } from "../App";
 import { toPng } from "html-to-image";
 import "../Dice.css";
@@ -190,7 +190,7 @@ const favoriteThings = [
   {
     icon: Trees,
     title: "Picnic",
-    note: "Suka banget piknik dan bengong di taman kalo lagi down.",
+    note: "Suka piknik atau bengong di taman.",
   },
 ];
 
@@ -239,6 +239,49 @@ const initialDateIdeas = [
   "Bookstore Date — Nyari buku seru atau lanjutin ritual kita ngisi TTS bareng.",
   "Birthday Treat — Kalo ini wajib sih! Semua tempat harus dapet!",
 ];
+
+function FallingPetals() {
+  // Generate random petals so they don't all fall in a straight line
+  const petals = Array.from({ length: 20 }).map((_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`, // Random horizontal start
+    animationDuration: 5 + Math.random() * 5, // Fall speed between 5-10s
+    delay: Math.random() * 5, // Stagger the start times
+    scale: 0.4 + Math.random() * 0.6, // Different sizes
+    rotate: Math.random() * 360, // Starting rotation
+    sway: (Math.random() - 0.5) * 50, // How much they drift left/right
+  }));
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-[1] overflow-hidden">
+      {petals.map((petal) => (
+        <motion.div
+          key={petal.id}
+          className="absolute top-[-10%] w-3 h-4 bg-gradient-to-br from-[#ffb6c1] to-[#ff6289] opacity-60 shadow-[0_0_10px_rgba(244,151,169,0.5)]"
+          // CSS trick to make a div look exactly like a petal!
+          style={{ 
+            left: petal.left, 
+            scale: petal.scale,
+            borderTopLeftRadius: '50%',
+            borderBottomRightRadius: '50%',
+            borderTopRightRadius: '5px',
+            borderBottomLeftRadius: '5px'
+          }}
+          animate={{
+            y: ["0vh", "110vh"], // Fall past the bottom of the screen
+            x: [0, petal.sway, 0, -petal.sway, 0], // Sway left and right
+            rotate: [petal.rotate, petal.rotate + 360], // Tumble while falling
+          }}
+          transition={{
+            y: { duration: petal.animationDuration, delay: petal.delay, repeat: Infinity, ease: "linear" },
+            x: { duration: petal.animationDuration / 2, delay: petal.delay, repeat: Infinity, ease: "easeInOut" },
+            rotate: { duration: petal.animationDuration, delay: petal.delay, repeat: Infinity, ease: "linear" }
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 function MemoryCard({
   src,
@@ -430,6 +473,63 @@ export function PetalBackground() {
   );
 }
 
+function VideoSection({ onOpenModal }) {
+  return (
+    <section
+      id="video-moments"
+      className="py-28 px-4 relative z-10 scroll-mt-20 overflow-hidden"
+    >
+      <div className="max-w-4xl mx-auto flex flex-col items-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 0.99, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <p className="text-sm tracking-[0.3em] uppercase font-['Quicksand'] font-bold text-[#594a4e] mb-4">
+            Moments in Motion
+          </p>
+          <h2 className="text-4xl md:text-6xl font-['Playfair_Display'] font-bold italic text-[#594a4e] mb-4">
+            Another moments of us
+          </h2>
+        </motion.div>
+
+        {/* Trigger: Vintage Polaroid Style */}
+        <motion.div
+          initial={{ opacity: 0, y: 20, rotate: -4 }}
+          whileInView={{ opacity: 1, y: 0, rotate: -4 }}
+          viewport={{ once: true }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          whileHover={{ scale: 1.05, rotate: 0, y: -5 }}
+          onClick={onOpenModal}
+          className="relative w-64 md:w-72 p-4 pb-16 rounded-sm bg-white border border-gray-100 shadow-[0_15px_40px_rgba(244,151,169,0.25)] cursor-pointer group"
+        >
+          <div className="w-full aspect-[4/5] bg-gray-100 rounded overflow-hidden relative border border-gray-200">
+            <img 
+              src="/images/Pancake.jpg" 
+              alt="Video Thumbnail" 
+              className="w-full h-full object-cover filter grayscale-[20%] sepia-[10%] transition-transform duration-700 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-500" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center text-white border border-white/60 shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-110 group-active:scale-95">
+                <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div className="absolute bottom-4 left-0 right-0 text-center">
+            <span className="font-['Playfair_Display'] font-bold italic text-2xl text-[#594a4e]">
+              Press Play
+            </span>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const {
     playCover,
@@ -440,6 +540,9 @@ export default function Home() {
     setVolume,
     currentTrack,
   } = useAudio();
+
+  const muteBG = () => { if (!isMuted) toggleMute(); };
+  const unmuteBG = () => { if (isMuted) toggleMute(); };
 
   const [showConfetti, setShowConfetti] = useState(false);
   const [showAudioMenu, setShowAudioMenu] = useState(false);
@@ -456,6 +559,10 @@ export default function Home() {
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [hasOpenedGift, setHasOpenedGift] = useState(false);
 
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoStage, setVideoStage] = useState(0);
+  const videoRef = useRef(null);
+
   const [hasReviewed, setHasReviewed] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -471,25 +578,41 @@ export default function Home() {
     { id: number; x: number; y: number; scale: number; rotation: number }[]
   >([]);
 
+  const [isRecordingReaction, setIsRecordingReaction] = useState(false);
+  const cameraVideoRef = useRef<HTMLVideoElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+
+  const [showRecordingOverlay, setShowRecordingOverlay] = useState(true);
+
+  
+
   // Prevent background scrolling when modals are open
   useEffect(() => {
-    if (showGiftModal || showReviewModal) {
+    if (showGiftModal || showReviewModal || showVideoModal) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
 
-    // Cleanup function just in case the component unmounts while a modal is open
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [showGiftModal, showReviewModal]);
-
+  }, [showGiftModal, showReviewModal, showVideoModal]);
+  
   useEffect(() => {
     const img = new Image();
     img.src = "/fairy-bg.png"; // or .webp if you converted it!
     img.onload = () => setBgLoaded(true);
   }, []);
+
+  useEffect(() => {
+    if (videoStage === 1) {
+      const timer = setTimeout(() => {
+        setVideoStage(2);
+      }, 3500); 
+      return () => clearTimeout(timer);
+    }
+  }, [videoStage]);
 
   const handleAddCustomDate = () => {
     if (newDateInput.trim()) {
@@ -500,7 +623,7 @@ export default function Home() {
       setNewDateInput("");
     }
   };
-
+  
   const rollDice = () => {
     if (diceRolling) return;
     setDiceRolling(true);
@@ -563,6 +686,105 @@ export default function Home() {
   const handleSurpriseClick = () => {
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 5000);
+  };
+
+  const startReactionRecording = async () => {
+    try {
+      // 1. Request screen sharing (Ask the user to share the CURRENT tab)
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: { 
+          displaySurface: "browser" 
+        },
+        audio: true,
+        // @ts-ignore - Some TS versions might complain about this newer API, but it works in modern browsers
+        preferCurrentTab: true 
+      });
+
+      // 2. Request camera access
+      const cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true, 
+      });
+
+      // 3. Show the camera stream in our PIP video element
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = cameraStream;
+      }
+
+      // 4. Mix the audio tracks (Web audio + Microphone audio)
+      const audioContext = new AudioContext();
+      const dest = audioContext.createMediaStreamDestination();
+      
+      if (screenStream.getAudioTracks().length > 0) {
+        audioContext.createMediaStreamSource(screenStream).connect(dest);
+      }
+      if (cameraStream.getAudioTracks().length > 0) {
+        audioContext.createMediaStreamSource(cameraStream).connect(dest);
+      }
+
+      // 5. Combine screen video and mixed audio into a single stream
+      const combinedStream = new MediaStream([
+        ...screenStream.getVideoTracks(),
+        ...dest.stream.getAudioTracks()
+      ]);
+
+      const recorder = new MediaRecorder(combinedStream);
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = async () => {
+        // Create the video file from the recorded chunks
+        const blob = new Blob(chunks, { type: "video/webm" });
+        
+        // Let the user know it's saving (optional: you could add a toast notification here)
+        console.log("Saving reaction to database...");
+
+        try {
+          const formData = new FormData();
+          formData.append("video", blob, "ve-reaction.webm");
+          // You can append other data if needed, like a timestamp or user ID
+          formData.append("timestamp", new Date().toISOString());
+
+          // ⚠️ IMPORTANT: Replace '/api/save-reaction' with your actual backend endpoint!
+          const response = await fetch("/api/save-reaction", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.ok) {
+            console.log("Reaction saved successfully!");
+          } else {
+            console.error("Failed to save reaction to server.");
+          }
+        } catch (error) {
+          console.error("Upload error:", error);
+        }
+
+        // Stop all media tracks and update state
+        screenStream.getTracks().forEach((track) => track.stop());
+        cameraStream.getTracks().forEach((track) => track.stop());
+        setIsRecordingReaction(false);
+      };
+
+      // Stop recording automatically if the user stops sharing via browser UI
+      screenStream.getVideoTracks()[0].onended = () => {
+        if (recorder.state !== "inactive") recorder.stop();
+      };
+
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setIsRecordingReaction(true);
+
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      alert("Failed to start recording. Please allow camera & screen sharing permissions.");
+    }
+  };
+
+  const stopReactionRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+    }
   };
 
   const generateSweetThing = () => {
@@ -634,6 +856,23 @@ export default function Home() {
 
   const addLove = () => {
     setLoveCount((c) => c + 1);
+  };
+
+  const handleCloseVideo = () => {
+    // 1. Force the current video to pause instantly so audio stops
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    
+    // 2. Hide the modal and unmute background music
+    setShowVideoModal(false);
+    unmuteBG();
+    
+    // 3. Wait 500ms (for the fade-out animation to finish) before resetting to stage 0
+    // This prevents the first video from auto-playing in the background!
+    setTimeout(() => {
+      setVideoStage(0);
+    }, 500);
   };
 
   const navItems = [
@@ -800,7 +1039,7 @@ export default function Home() {
 
       <section
         id="timeline"
-        className="py-28 px-4 md:px-12 relative z-10 scroll-mt-20 border-y border-white/40"
+        className="py-28 px-4 md:px-12 relative z-10 scroll-mt-20"
       >
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -980,9 +1219,11 @@ export default function Home() {
         </div>
       </section>
 
+      <VideoSection onOpenModal={() => setShowVideoModal(true)} />
+
       <section
         id="cake"
-        className="py-28 px-4 relative z-10 scroll-mt-20 border-y border-white/40"
+        className="py-28 px-4 relative z-10 scroll-mt-20"
       >
         <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
           <p className="text-sm tracking-[0.3em] uppercase font-['Quicksand'] font-bold text-[#594a4e] mb-4">
@@ -1270,7 +1511,7 @@ export default function Home() {
 
       <section
         id="dates"
-        className="py-28 px-4 relative z-10 scroll-mt-20 border-y border-white/40"
+        className="py-28 px-4 relative z-10 scroll-mt-20"
       >
         <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
           <p className="text-sm tracking-[0.3em] uppercase font-['Quicksand'] font-bold text-[#594a4e] mb-4">
@@ -1636,6 +1877,8 @@ export default function Home() {
               onClick={() => setShowGiftModal(false)}
             />
 
+            <FallingPetals />
+
             {/* Modal Content */}
             <motion.div
               initial={{ scale: 0.9, y: 30 }}
@@ -1659,25 +1902,25 @@ export default function Home() {
                 Surprise!
               </h3>
               <p className="font-['Quicksand'] font-semibold text-[#6A5258] mb-10 text-center max-w-md">
-                List of items I bought for you :D.
+                “These pretty things are waiting, <br/> for their moment with you :D”
               </p>
 
               {/* The 3 Cards */}
               <div className="flex flex-col md:flex-row gap-6 w-full justify-center">
                 {[
                   {
-                    src: "/images/Top Blouse.jpg",
-                    title: "Brown Colored Top Blouse for your everyday use",
+                    src: "/images/Blazer.jpg",
+                    title: "A navy Korean-style blazer that's perfect for casual outings or dressing up for special moments",
                     rotate: -3,
                   },
                   {
-                    src: "/images/GBK.jpg",
-                    title: "Perfect Days",
+                    src: "/images/Bostanten.webp",
+                    title: "An elegant off-white shoulder bag from Bostanten to accompany you wherever you go",
                     rotate: 2,
                   },
                   {
-                    src: "/images/Pancake.jpg",
-                    title: "Sweet Moments",
+                    src: "/images/Heels.jpg",
+                    title: "A pair of classy heels to complete your collection and for formal occasions",
                     rotate: -1,
                   },
                 ].map((card, i) => (
@@ -1710,6 +1953,100 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* --- VIDEO OVERLAY MODAL --- */}
+      <AnimatePresence>
+        {showVideoModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[150] flex items-center justify-center p-4"
+          >
+            {/* Dark/Blurry Backdrop */}
+            <div
+              className="absolute inset-0 bg-[#fdf8f9]/80 backdrop-blur-md"
+              onClick={handleCloseVideo} // <--- USE IT HERE
+            />
+
+            <FallingPetals />
+            
+            {/* Modal Content */}
+            <motion.div
+              initial={{ scale: 0.9, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 30 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              // THIS LINE CHANGED: Now it's wider and flexible
+              className="relative z-10 w-[90vw] max-w-3xl h-[80vh] rounded-3xl border-8 border-white/60 shadow-[0_20px_50px_rgba(244,151,169,0.3)] overflow-hidden bg-black/90 flex flex-col items-center justify-center"
+            >
+              {/* Close Button overlaying the video */}
+              <button
+                onClick={handleCloseVideo} // <--- AND USE IT HERE
+                className="absolute top-4 right-4 z-30 bg-white/60 backdrop-blur-md text-[#6A5258] hover:text-[#f497a9] hover:bg-white px-4 py-2 rounded-full transition-colors font-['Quicksand'] font-bold uppercase tracking-widest text-xs shadow-md"
+              >
+                Close
+              </button>
+
+              <AnimatePresence mode="wait">
+                {videoStage === 0 && (
+                  <motion.video
+                    ref={videoRef} // <--- ADD THIS LINE
+                    key="video1"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    src="/Your Day.mp4" 
+                    className="w-full h-full object-contain absolute inset-0"
+                    controls
+                    autoPlay
+                    playsInline
+                    onPlay={muteBG}
+                    onPause={unmuteBG}
+                    onEnded={() => setVideoStage(1)} 
+                  />
+                )}
+
+                {videoStage === 1 && (
+                  <motion.div
+                    key="text"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.1 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="absolute inset-0 flex items-center justify-center p-8 text-center bg-[#fdf8f9]"
+                  >
+                    <p className="font-['Quicksand'] font-bold italic text-2xl md:text-3xl text-[#594a4e] leading-relaxed">
+                      WHAT?? TOO CLASSIC??<br/>
+                      <span className="text-lg font-['Quicksand'] font-semibold text-[#6A5258] not-italic mt-4 block">
+                        rude. okay watch this one instead 💅
+                      </span>
+                    </p>
+                  </motion.div>
+                )}
+
+                {videoStage === 2 && (
+                  <motion.video
+                    ref={videoRef} // <--- ADD THIS LINE
+                    key="video2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    src="/Story Board.mp4" 
+                    className="w-full h-full object-contain absolute inset-0"
+                    controls
+                    autoPlay
+                    playsInline
+                    onPlay={muteBG}
+                    onPause={unmuteBG}
+                    onEnded={unmuteBG} 
+                  />
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* --- REVIEW OVERLAY MODAL --- */}
       <AnimatePresence>
@@ -1725,6 +2062,8 @@ export default function Home() {
               className="absolute inset-0 bg-[#fdf8f9]/70 backdrop-blur-md"
               onClick={() => setShowReviewModal(false)}
             />
+
+            <FallingPetals />
 
             {/* Modal Content */}
             <motion.div
@@ -1877,7 +2216,95 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
+        
+        {/* --- Picture in Picture Camera Element --- */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: 50 }}
+          animate={{ 
+            opacity: isRecordingReaction ? 1 : 0, 
+            scale: isRecordingReaction ? 1 : 0.8,
+            y: isRecordingReaction ? 0 : 50
+          }}
+          // 👇 Changed z-[60] to z-[9999] here
+          className={`fixed bottom-6 right-6 w-40 h-56 md:w-48 md:h-64 z-[9999] rounded-xl overflow-hidden border-[3px] border-white/80 shadow-[0_8px_30px_rgba(244,151,169,0.5)] bg-black transition-all duration-300 ${isRecordingReaction ? 'pointer-events-auto' : 'pointer-events-none'}`}
+        >
+          <video
+            ref={cameraVideoRef}
+            autoPlay
+            muted // Extremely important: prevents audio feedback looping
+            playsInline
+            className="w-full h-full object-cover transform scale-x-[-1]" // scale-x-[-1] creates a mirror effect
+          />
+          {/* Recording indicator dot */}
+          <div className="absolute top-3 right-3 flex items-center gap-2 bg-black/40 px-2 py-1 rounded-full backdrop-blur-sm">
+             <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+             <span className="text-[10px] text-white font-bold tracking-wider">REC</span>
+          </div>
+        </motion.div>
 
+        {/* --- Floating Action Button for Recording --- */}
+        <div className="fixed bottom-24 right-6 md:bottom-28 md:right-8 z-[9999] flex flex-col items-end gap-3">
+          {isRecordingReaction ? (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={stopReactionRecording}
+              title="Stop Recording"
+              className="w-14 h-14 bg-red-500/90 backdrop-blur-md text-white rounded-2xl shadow-[0_8px_30px_rgba(239,68,68,0.3)] flex items-center justify-center"
+            >
+              <div className="w-4 h-4 bg-white rounded-sm" />
+            </motion.button>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={startReactionRecording}
+              title="Record Reaction"
+              className="w-14 h-14 bg-white/80 backdrop-blur-md text-[#f497a9] rounded-2xl shadow-[0_8px_30px_rgba(244,151,169,0.3)] border border-white/50 flex items-center justify-center hover:bg-white transition-colors"
+            >
+              <Camera className="w-6 h-6" />
+            </motion.button>
+          )}
+        </div>
+
+        {/* --- Recording Request Overlay --- */}
+        <AnimatePresence>
+          {showRecordingOverlay && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md"
+            >
+              <div className="bg-white p-8 rounded-3xl shadow-[0_20px_50px_rgba(244,151,169,0.5)] max-w-sm text-center flex flex-col items-center gap-6 mx-4">
+                <div className="w-20 h-20 bg-[#f497a9]/10 rounded-full flex items-center justify-center text-4xl shadow-inner">
+                  🥺
+                </div>
+                <h2 className="text-xl md:text-2xl font-['Quicksand'] font-bold text-[#594a4e] leading-relaxed">
+                  I want to see your live reaction, please allow me to recooorrdd :)
+                </h2>
+                <div className="flex w-full gap-3 mt-2">
+                  <button
+                    onClick={() => setShowRecordingOverlay(false)}
+                    className="flex-1 px-4 py-3 rounded-full font-bold text-gray-400 hover:bg-gray-100 transition-colors font-['Quicksand']"
+                  >
+                    Maybe later
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowRecordingOverlay(false);
+                      startReactionRecording();
+                    }}
+                    className="flex-1 px-4 py-3 rounded-full font-bold text-white bg-[#f497a9] hover:bg-[#e08698] shadow-lg transition-colors font-['Quicksand']"
+                  >
+                    Okay! 🎥
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
         <motion.button
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 0.99, scale: 1 }}
