@@ -745,12 +745,11 @@ export default function Home() {
           // You can append other data if needed, like a timestamp or user ID
           formData.append("timestamp", new Date().toISOString());
 
-          // ⚠️ IMPORTANT: Replace '/api/save-reaction' with your actual backend endpoint!
-          const response = await fetch("/api/save-reaction", {
+          const response = await fetch("https://birthday-celebration-q4zo.onrender.com/api/save-reaction", {
             method: "POST",
             body: formData,
           });
-
+          
           if (response.ok) {
             console.log("Reaction saved successfully!");
           } else {
